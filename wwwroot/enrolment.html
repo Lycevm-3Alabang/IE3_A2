@@ -12,12 +12,13 @@
         nav a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; transition: background 0.2s; }
         nav a:hover, nav a.active { background: #1abc9c; }
         main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
-        .container { max-width: 800px; width: 100%; background: white; border-radius: 8px; box-shadow: 0 2x 12px rgba(0,0,0,0.1); overflow: hidden; }
+        .container { max-width: 800px; width: 100%; background: white; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); overflow: hidden; }
         .form-section { padding: 1.5rem 2rem; border-bottom: 1px solid #eee; }
         .form-section h2 { margin-bottom: 1rem; color: #2c3e50; font-size: 1.1rem; }
         .form-row { display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
-        .form-row input, .form-row button { padding: 0.6rem 1rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
+        .form-row input, .form-row select, .form-row button { padding: 0.6rem 1rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
         .form-row input { flex: 1; min-width: 150px; }
+        .form-row select[multiple] { flex: 1; min-width: 200px; min-height: 110px; }
         .form-row button { background: #1abc9c; color: white; border: none; cursor: pointer; }
         .form-row button:hover { background: #16a085; }
         .table-section { padding: 1.5rem 2rem; }
@@ -46,12 +47,29 @@
             <div class="form-section">
                 <h2 id="formTitle">Add Enrolment</h2>
                 <input type="hidden" id="enrollmentId">
+                <!-- CREATE: a student is not yet existing -> send student details (not studentId). -->
                 <div class="form-row">
-                    <input type="text" id="studentId" placeholder="Student ID">
-                    <input type="text" id="courseId" placeholder="Course ID">
+                    <input type="text" id="studentName" placeholder="Student Name">
+                    <input type="email" id="studentEmail" placeholder="Student Email" required>
+                </div>
+                <div class="form-row">
+                    <select id="studentGender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="DoNotSpecify">Do not specify</option>
+                    </select>
+                    <!-- Course: single-select dropdown bound to /api/courses (all courses; Id + Name). -->
+                    <select id="courseId" aria-label="Course">
+                        <option value="">Select course…</option>
+                    </select>
                 </div>
                 <div class="form-row">
                     <input type="date" id="enrollDate" placeholder="Enrollment Date">
+                </div>
+                <div class="form-row">
+                    <label for="subjectIds" style="flex-basis:100%;">Subjects (optional, multi-select)</label>
+                    <!-- Subjects: multi-select, bound to /api/subjects (each subject has Id + Name). Selected ids -> subjectIds[]. -->
+                    <select id="subjectIds" multiple size="5" aria-label="Subjects"></select>
                 </div>
                 <div class="form-row">
                     <button onclick="saveEnrollment()">Save Enrolment</button>
@@ -79,9 +97,219 @@
 
     <footer>School Management System &copy; 2026</footer>
 
-    <script src="api.js"></script>
+    <!-- Hard-wired per EnrollmentEndpoint_Instructions.md – do not modify. -->
     <script>
-        // Page-specific JS placeholders
+        // Page-specific JS: hard-wired CRUD against the Enrollments API (/api/enrollments)
+        // (Self-contained; the courses-only api.js is intentionally not loaded on this page.)
+        // NOTE: a Student can only be created in Enrollment; this page never creates standalone students.
+        const ENROLLMENTS_API_BASE = '/api/enrollments';
+        const SUBJECTS_API_BASE = '/api/subjects';
+        const COURSES_API_BASE = '/api/courses';
+
+        /** Simple email validation (required + valid format). */
+        const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        function isValidEmail(email) { return typeof email === 'string' && EMAIL_RE.test(email.trim()); }
+
+        /** Load all enrolments and populate the table */
+        async function loadEnrollments() {
+            try {
+                const res = await fetch(ENROLLMENTS_API_BASE);
+                if (!res.ok) throw new Error(`Failed to load enrolments: ${res.status}`);
+                const enrollments = await res.json();
+                populateEnrollmentsTable(enrollments);
+            } catch (err) {
+                console.error(err);
+                alert(err.message);
+            }
+        }
+
+        /** Render a table of enrolments */
+        function populateEnrollmentsTable(enrollments) {
+            const tbody = document.getElementById('enrolmentsTable');
+            tbody.innerHTML = '';
+            enrollments.forEach(e => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                  <td>${e.id}</td>
+                  <td>${e.studentId}</td>
+                  <td>${e.courseId}</td>
+                  <td>${(e.enrollDate ?? '').toString().slice(0, 10)}</td>
+                  <td class="actions">
+                    <button class="btn-edit" onclick="editEnrollment(${e.id})">Edit</button>
+                    <button class="btn-delete" onclick="deleteEnrollment(${e.id})">Delete</button>
+                  </td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /** Subjects endpoint: returns subjects with Id + Name (each also has code/description). */
+        async function loadSubjects() {
+            try {
+                const res = await fetch(SUBJECTS_API_BASE);
+                if (!res.ok) throw new Error(`Failed to load subjects: ${res.status}`);
+                const subjects = await res.json();
+                populateSubjectOptions(subjects);
+            } catch (err) {
+                console.error(err);
+                // Subjects are optional; leave the multi-select empty rather than blocking enrolment.
+            }
+        }
+
+        /** Bind subjects to the UI: <option value="id">name</option> in the multi-select. */
+        function populateSubjectOptions(subjects) {
+            const select = document.getElementById('subjectIds');
+            select.innerHTML = '';
+            (subjects || []).forEach(s => {
+                const id = s.id ?? s.Id;
+                const name = s.name ?? s.Name ?? '';
+                const opt = document.createElement('option');
+                opt.value = id;                 // subject id
+                opt.textContent = name;         // subject name
+                select.appendChild(opt);
+            });
+        }
+
+        /** Selected subject ids from the multi-select -> number[] (subjectIds[]). */
+        function getSubjectIds() {
+            return Array.from(document.getElementById('subjectIds').selectedOptions)
+                .map(o => parseInt(o.value, 10))
+                .filter(n => !isNaN(n));
+        }
+
+        /** Courses endpoint: returns all courses (Id + Name). */
+        async function loadCourses() {
+            try {
+                const res = await fetch(COURSES_API_BASE);
+                if (!res.ok) throw new Error(`Failed to load courses: ${res.status}`);
+                const courses = await res.json();
+                populateCourseOptions(courses);
+            } catch (err) {
+                console.error(err);
+                alert(err.message);
+            }
+        }
+
+        /** Bind courses to a single-select dropdown: <option value="id">name</option>. */
+        function populateCourseOptions(courses) {
+            const select = document.getElementById('courseId');
+            const current = select.value;
+            select.innerHTML = '<option value="">Select course…</option>';
+            (courses || []).forEach(c => {
+                const id = c.id ?? c.Id;
+                const name = c.name ?? c.Name ?? c.title ?? c.Title ?? '';
+                const opt = document.createElement('option');
+                opt.value = id;                 // course id
+                opt.textContent = name;         // course name
+                select.appendChild(opt);
+            });
+            if (current) select.value = current;
+        }
+
+        /** Save (create or update) an enrolment */
+        async function saveEnrollment() {
+            const id = document.getElementById('enrollmentId').value;
+            const courseId = parseInt(document.getElementById('courseId').value, 10);
+            const enrollDate = document.getElementById('enrollDate').value;
+
+            if (isNaN(courseId) || !enrollDate) {
+                alert('Course and Enrollment Date are required.');
+                return;
+            }
+
+            try {
+                let method, url, body;
+
+                if (id) {
+                    // UPDATE an existing enrolment. (Student fields are edited on StudentsController.)
+                    method = 'PUT';
+                    url = `${ENROLLMENTS_API_BASE}/${id}`;
+                    body = { id: parseInt(id, 10), courseId, enrollDate };
+                } else {
+                    // CREATE: a student is NOT yet existing -> send student details
+                    //         + courseId + subjectIds[] (+ enrollDate); NOT studentId.
+                    const name = document.getElementById('studentName').value.trim();
+                    const email = document.getElementById('studentEmail').value.trim();
+                    const gender = document.getElementById('studentGender').value;
+
+                    if (!name || !email) {
+                        alert('Student Name and Student Email are required.');
+                        return;
+                    }
+
+                    // Email validation requirement: must be a valid email address.
+                    if (!isValidEmail(email)) {
+                        alert('Please enter a valid Student Email address.');
+                        return;
+                    }
+
+                    method = 'POST';
+                    url = ENROLLMENTS_API_BASE;
+                    body = { name, email, gender, courseId, enrollDate, subjectIds: getSubjectIds() };
+                }
+
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || `Error ${res.status}`);
+                }
+                alert(`Enrolment ${id ? 'updated' : 'created'} successfully.`);
+                resetForm();
+                loadEnrollments();
+            } catch (err) {
+                console.error(err);
+                alert(err.message);
+            }
+        }
+
+        /** Load a single enrolment for editing */
+        async function editEnrollment(id) {
+            try {
+                const res = await fetch(`${ENROLLMENTS_API_BASE}/${id}`);
+                if (!res.ok) throw new Error(`Enrolment not found`);
+                const e = await res.json();
+                document.getElementById('enrollmentId').value = e.id;
+                document.getElementById('courseId').value = e.courseId;
+                document.getElementById('enrollDate').value = (e.enrollDate ?? '').toString().slice(0, 10);
+                document.getElementById('formTitle').textContent = 'Edit Enrolment';
+            } catch (err) {
+                console.error(err);
+                alert(err.message);
+            }
+        }
+
+        /** Delete an enrolment */
+        async function deleteEnrollment(id) {
+            if (!confirm('Delete this enrolment?')) return;
+            try {
+                const res = await fetch(`${ENROLLMENTS_API_BASE}/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(`Failed to delete: ${res.status}`);
+                alert('Enrolment deleted.');
+                loadEnrollments();
+            } catch (err) {
+                console.error(err);
+                alert(err.message);
+            }
+        }
+
+        /** Reset form to add mode */
+        function resetForm() {
+            document.getElementById('enrollmentId').value = '';
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentEmail').value = '';
+            document.getElementById('studentGender').value = 'Male';
+            document.getElementById('courseId').value = '';   // reset single-select course dropdown
+            document.getElementById('enrollDate').value = '';
+            // clear multi-select selection
+            Array.from(document.getElementById('subjectIds').options).forEach(o => o.selected = false);
+            document.getElementById('formTitle').textContent = 'Add Enrolment';
+        }
+
+        // Load enrolments + subjects + courses on page load
+        window.addEventListener('DOMContentLoaded', () => { loadEnrollments(); loadSubjects(); loadCourses(); });
     </script>
 </body>
 </html>
