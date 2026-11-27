@@ -33,10 +33,17 @@ if (app.Environment.IsDevelopment())
 }
 
 // Serve hard-wired static pages. app.UseStaticFiles() BEFORE app.UseHttpsRedirection() / app.MapControllers().
+app.UseDefaultFiles();                                  // app/wwwroot -> index.* etc.
 app.UseStaticFiles();                                   // serves app/wwwroot if present
 var repoRootWwwroot = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "..", "wwwroot"));
 if (Directory.Exists(repoRootWwwroot))
 {
+    // Default page (not MVC): serve repo-root wwwroot/instructions.html at "/".
+    app.UseDefaultFiles(new DefaultFilesOptions
+    {
+        FileProvider = new PhysicalFileProvider(repoRootWwwroot),
+        DefaultFileNames = new List<string> { "instructions.html", "index.html", "index.htm", "default.html", "default.htm" }
+    });
     app.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new PhysicalFileProvider(repoRootWwwroot)   // repo-root wwwroot (this project keeps pages there)
@@ -51,4 +58,23 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Minimal API (not MVC): expose repository instruction markdown files for instructions.html.
+app.MapGet("/api/instructions", (IWebHostEnvironment env) =>
+{
+    var instructionsDir = Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "Instructions"));
+    var files = new List<InstructionFile>();
+
+    if (Directory.Exists(instructionsDir))
+    {
+        files = Directory.EnumerateFiles(instructionsDir, "*.md", SearchOption.TopDirectoryOnly)
+            .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+            .Select(path => new InstructionFile(Path.GetFileName(path)!, File.ReadAllText(path)))
+            .ToList();
+    }
+
+    return Results.Ok(files);
+});
+
 app.Run();
+
+record InstructionFile(string Name, string Content);
