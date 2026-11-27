@@ -17,7 +17,7 @@
         .form-section { padding: 1.5rem 2rem; border-bottom: 1px solid #eee; }
         .form-section h2 { margin-bottom: 1rem; color: #2c3e50; font-size: 1.1rem; }
         .form-row { display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
-        .form-row input, .form-row button { padding: 0.6rem 1rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
+        .form-row input, .form-row select, .form-row button { padding: 0.6rem 1rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
         .form-row input { flex: 1; min-width: 150px; }
         .form-row button { background: #1abc9c; color: white; border: none; cursor: pointer; }
         .form-row button:hover { background: #16a085; }
@@ -39,7 +39,7 @@
         <a href="students.html" class="active">Students</a>
         <a href="subjects.html">Subjects</a>
         <a href="courses.html">Courses</a>
-        <a href="enrollment.html">Enrolment</a>
+        <a href="enrolment.html">Enrolment</a>
     </nav>
     <main>
         <div class="container">
@@ -47,12 +47,16 @@
                 <h2 id="formTitle">Add Student</h2>
                 <input type="hidden" id="studentId">
                 <div class="form-row">
-                    <input type="text" id="firstName" placeholder="First Name">
-                    <input type="text" id="lastName" placeholder="Last Name">
+                    <input type="text" id="studentName" placeholder="Student Name" required>
+                    <input type="email" id="studentEmail" placeholder="Student Email" required>
                 </div>
                 <div class="form-row">
-                    <input type="email" id="email" placeholder="Email Address">
-                    <input type="date" id="dateOfBirth">
+                    <select id="studentGender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="DoNotSpecify">Do not specify</option>
+                    </select>
+                    <input type="number" id="courseId" placeholder="Course ID" min="1">
                 </div>
                 <div class="form-row">
                     <button onclick="saveStudent()">Save Student</button>
@@ -62,7 +66,7 @@
             <div class="table-section">
                 <h2>Students</h2>
                 <table>
-                    <thead><tr><th>ID</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Date of Birth</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Gender</th><th>Course ID</th><th>Actions</th></tr></thead>
                     <tbody id="studentsTable"></tbody>
                 </table>
             </div>
@@ -70,13 +74,24 @@
     </main>
     <footer>School Management System &copy; 2026</footer>
 
-    <script src="api.js"></script>
+    <!-- Self-contained; hard-wired CRUD. NOTE (order): Student is first; Enrolment last. -->
     <script>
+        // API base URL — hardcoded; app must run on port 8000 (see launchSettings + instructions). NOT relative.
+        const STUDENTS_API_BASE = 'http://localhost:8000/api/students';
+
+        // Email validation requirement.
+        const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        function isValidEmail(email) { return typeof email === 'string' && EMAIL_RE.test(email.trim()); }
+
         let students = [];
 
         async function loadStudents() {
-            students = await api.getStudents();
-            renderTable();
+            try {
+                const res = await fetch(STUDENTS_API_BASE);
+                if (!res.ok) throw new Error(`Failed to load students: ${res.status}`);
+                students = await res.json();
+                renderTable();
+            } catch (err) { console.error(err); alert(err.message); }
         }
 
         function renderTable() {
@@ -85,10 +100,10 @@
             tbody.innerHTML = students.map(s => `
                 <tr>
                     <td>${s.id}</td>
-                    <td>${s.firstName}</td>
-                    <td>${s.lastName}</td>
-                    <td>${s.email}</td>
-                    <td>${s.dateOfBirth}</td>
+                    <td>${s.name ?? ''}</td>
+                    <td>${s.email ?? ''}</td>
+                    <td>${s.gender ?? ''}</td>
+                    <td>${s.courseId ?? ''}</td>
                     <td class="actions">
                         <button class="btn-edit" onclick="editStudent(${s.id})">Edit</button>
                         <button class="btn-delete" onclick="deleteStudent(${s.id})">Delete</button>
@@ -98,35 +113,52 @@
 
         async function saveStudent() {
             const id = document.getElementById('studentId').value;
-            const data = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                dateOfBirth: document.getElementById('dateOfBirth').value
-            };
-            if (id) { await api.updateStudent(id, data); } else { await api.addStudent(data); }
-            resetForm();
-            loadStudents();
+            const name = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const gender = document.getElementById('studentGender').value;
+            const courseIdRaw = document.getElementById('courseId').value;
+            const courseId = courseIdRaw === '' ? 0 : parseInt(courseIdRaw, 10);
+
+            if (!name || !email) { alert('Student Name and Student Email are required.'); return; }
+            if (!isValidEmail(email)) { alert('Please enter a valid Student Email address.'); return; }
+
+            try {
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `${STUDENTS_API_BASE}/${id}` : STUDENTS_API_BASE;
+                const body = id ? { id: parseInt(id, 10), name, email, gender, courseId } : { name, email, gender, courseId };
+                const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `Error ${res.status}`); }
+                resetForm();
+                loadStudents();
+            } catch (err) { console.error(err); alert(err.message); }
         }
 
         function editStudent(id) {
-            const s = students.find(x => x.id === id);
+            const s = students.find(x => (x.id ?? x.Id) === id);
+            if (!s) return;
             document.getElementById('studentId').value = s.id;
-            document.getElementById('firstName').value = s.firstName;
-            document.getElementById('lastName').value = s.lastName;
-            document.getElementById('email').value = s.email;
-            document.getElementById('dateOfBirth').value = s.dateOfBirth;
+            document.getElementById('studentName').value = s.name ?? '';
+            document.getElementById('studentEmail').value = s.email ?? '';
+            document.getElementById('studentGender').value = s.gender ?? 'Male';
+            document.getElementById('courseId').value = s.courseId ?? '';
             document.getElementById('formTitle').textContent = 'Edit Student';
         }
 
-        async function deleteStudent(id) { if (confirm('Delete this student?')) { await api.deleteStudent(id); loadStudents(); } }
+        async function deleteStudent(id) {
+            if (!confirm('Delete this student?')) return;
+            try {
+                const res = await fetch(`${STUDENTS_API_BASE}/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(`Failed to delete: ${res.status}`);
+                loadStudents();
+            } catch (err) { console.error(err); alert(err.message); }
+        }
 
         function resetForm() {
             document.getElementById('studentId').value = '';
-            document.getElementById('firstName').value = '';
-            document.getElementById('lastName').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('dateOfBirth').value = '';
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentEmail').value = '';
+            document.getElementById('studentGender').value = 'Male';
+            document.getElementById('courseId').value = '';
             document.getElementById('formTitle').textContent = 'Add Student';
         }
 

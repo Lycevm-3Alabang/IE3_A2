@@ -83,7 +83,8 @@
     <script>
         // Page-specific JS: hard-wired CRUD against the Subjects API (/api/subjects)
         // (Self-contained; the courses-only api.js is intentionally not loaded on this page.)
-        const SUBJECTS_API_BASE = '/api/subjects';
+        // API base URL — hardcoded; app must run on port 8000 (see launchSettings + instructions). NOT relative.
+        const SUBJECTS_API_BASE = 'http://localhost:8000/api/subjects';
 
         /** Load all subjects and populate the table */
         async function loadSubjects() {

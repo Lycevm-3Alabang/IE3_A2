@@ -43,6 +43,23 @@ dotnet tool install --global dotnet-ef
 - **Future work** – MySQL and MongoDB repository stubs exist but are not functional; implement them when you need support for those databases.
 
 
+## Feature instruction order
+
+Work the endpoint features in this order (each has its own instructions file):
+
+1. **Student — FIRST** — [`StudentEndpoint_Instructions.md`](StudentEndpoint_Instructions.md)
+2. Course — [`CourseEndpoint_Instructions.md`](CourseEndpoint_Instructions.md)
+3. Subject — [`SubjectEndpoint_Instructions.md`](SubjectEndpoint_Instructions.md)
+4. **Enrolment — LAST (IMPORTANT)** — [`EnrollmentEndpoint_Instructions.md`](EnrollmentEndpoint_Instructions.md)
+
+> **Important:** **Enrolment is the last feature to be worked on** — do it after Student, Course, and Subject are in place, because it builds on them. Student is first.
+
+## API base URL & port 8000 (nothing changes on the HTML pages)
+
+All hard-wired pages in `wwwroot/*.html` (and `api.js`) **hardcode** the API base as **`http://localhost:8000/api/<endpoint>`** (e.g. `http://localhost:8000/api/students`, `/api/courses`, `/api/subjects`, `/api/enrollments`); they do **not** use a relative `/api/...` base.
+
+**You must run the app on port 8000.** Set `applicationUrl` to **`http://localhost:8000`** in **`WebApplication2/Properties/launchSettings.json`** (already set; use the **`http`** profile — `dotnet run --launch-profile http`, or `dotnet run`, or `dotnet run --urls http://localhost:8000`; avoid `https://localhost:...`/other ports so `app.UseHttpsRedirection()` doesn't redirect). Once the app runs on **8000** and your endpoints are created, **no changes are needed on any HTML page.**
+
 ## Overview
 
 An **ASP.NET Core Web API** project that provides CRUD endpoints for managing student records, backed by a SQLite database via Entity Framework Core.

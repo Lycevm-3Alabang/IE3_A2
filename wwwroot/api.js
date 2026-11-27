@@ -1,6 +1,7 @@
 // API client for the Courses page
 // Base URL for the API – same domain, same port
-const API_BASE = '/api/courses';
+// API base URL — hardcoded; app must run on port 8000 (see launchSettings + instructions). NOT relative.
+const API_BASE = 'http://localhost:8000/api/courses';
 
 /** Load all courses and populate the table */
 async function loadCourses() {

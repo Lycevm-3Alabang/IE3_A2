@@ -531,6 +531,8 @@ Ensure that:
 
 ```csharp
 app.UseStaticFiles();
+
+> **API base URL & port 8000:** The hard-wired page hardcodes **`http://localhost:8000/api/<endpoint>`**; it does **not** use a relative `/api/...`. **Set `applicationUrl` to `http://localhost:8000` in `WebApplication2/Properties/launchSettings.json`** (profile `http`; `dotnet run --launch-profile http`, or `dotnet run --urls http://localhost:8000`; avoid `https://localhost:...`/other ports so `app.UseHttpsRedirection()` doesn't redirect). Once the app runs on **8000** and your endpoints are created, **nothing needs to be changed on the HTML page.**
 ```
 
 * This must be placed **before** `app.UseHttpsRedirection()` or `app.MapControllers()`.
