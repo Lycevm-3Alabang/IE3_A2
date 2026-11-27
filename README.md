@@ -67,6 +67,12 @@ An **ASP.NET Core Web API** project that provides CRUD endpoints for managing st
 ├── DTO/Students/
 │   ├── CreateStudentRequest.cs  → Input model for POST
 │   └── CreateStudentResponse.cs → Output model for POST
+├── DTO/Courses/
+│   └── CreateCourseRequest.cs  → Input model for POST
+├── DTO/Subjects/
+│   └── CreateSubjectRequest.cs  → Input model for POST
+├── DTO/Enrolments/
+│   └── CreateEnrollmentRequest.cs  → Input model for POST
 ├── Repository/
 │   ├── IStudentRepository.cs    → Repository interface
 │   ├── StudentRepository.cs     → SQLite implementation (working)
