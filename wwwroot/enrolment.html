@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enrolment - School Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; color: #333; min-height: 100vh; display: flex; flex-direction: column; }
+        header { background: #2c3e50; color: white; padding: 1rem 2rem; }
+        header h1 { font-size: 1.5rem; }
+        nav { background: #34495e; display: flex; gap: 1rem; padding: 0.75rem 2rem; flex-wrap: wrap; }
+        nav a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; transition: background 0.2s; }
+        nav a:hover, nav a.active { background: #1abc9c; }
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        .container { max-width: 800px; width: 100%; background: white; border-radius: 8px; box-shadow: 0 2x 12px rgba(0,0,0,0.1); overflow: hidden; }
+        .form-section { padding: 1.5rem 2rem; border-bottom: 1px solid #eee; }
+        .form-section h2 { margin-bottom: 1rem; color: #2c3e50; font-size: 1.1rem; }
+        .form-row { display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .form-row input, .form-row button { padding: 0.6rem 1rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
+        .form-row input { flex: 1; min-width: 150px; }
+        .form-row button { background: #1abc9c; color: white; border: none; cursor: pointer; }
+        .form-row button:hover { background: #16a085; }
+        .table-section { padding: 1.5rem 2rem; }
+        .table-section h2 { margin-bottom: 1rem; color: #2c3e50; font-size: 1.1rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: #555; font-weight: 600; }
+        tr:hover { background: #fafbfc; }
+        .actions button { margin-right: 0.5rem; padding: 0.35rem 0.75rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        .btn-edit { background: #3498db; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        footer { text-align: center; padding: 1rem; color: #999; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <header><h1>School Management System</h1></header>
+    <nav>
+        <a href="students.html">Students</a>
+        <a href="subjects.html">Subjects</a>
+        <a href="courses.html">Courses</a>
+        <a href="enrolment.html" class="active">Enrolment</a>
+    </nav>
+
+    <main>
+        <div class="container">
+            <div class="form-section">
+                <h2 id="formTitle">Add Enrolment</h2>
+                <input type="hidden" id="enrollmentId">
+                <div class="form-row">
+                    <input type="text" id="studentId" placeholder="Student ID">
+                    <input type="text" id="courseId" placeholder="Course ID">
+                </div>
+                <div class="form-row">
+                    <input type="date" id="enrollDate" placeholder="Enrollment Date">
+                </div>
+                <div class="form-row">
+                    <button onclick="saveEnrollment()">Save Enrolment</button>
+                    <button onclick="resetForm()" style="background:#95a5a6;">Cancel</button>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <h2>Enrolments</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Student ID</th>
+                            <th>Course ID</th>
+                            <th>Enrollment Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enrolmentsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer>School Management System &copy; 2026</footer>
+
+    <script src="api.js"></script>
+    <script>
+        // Page-specific JS placeholders
+    </script>
+</body>
+</html>
