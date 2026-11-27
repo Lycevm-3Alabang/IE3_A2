@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using WebApplication2.Data;
-using WebApplication2.Repository;
+using IER_P1.Data;
+using IER_P1.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 

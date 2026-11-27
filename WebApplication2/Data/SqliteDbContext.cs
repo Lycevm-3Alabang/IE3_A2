@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace WebApplication2.Data
+namespace IER_P1.Data
 {
     public class SqliteDbContext : DbContext
     {

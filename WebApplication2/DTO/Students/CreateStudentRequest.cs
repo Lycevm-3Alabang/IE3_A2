@@ -1,6 +1,6 @@
-﻿using WebApplication2.Data;
+﻿using IER_P1.Data;
 
-namespace WebApplication2.DTO.Students
+namespace IER_P1.DTO.Students
 {
     public class CreateStudentRequest
     {

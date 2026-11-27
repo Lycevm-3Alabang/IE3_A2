@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApplication2.Data
+namespace IER_P1.Data
 {
     public class Student
     {

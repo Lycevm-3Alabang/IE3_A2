@@ -1,6 +1,6 @@
-﻿using WebApplication2.DTO.Students;
+﻿using IER_P1.Data;
 
-namespace WebApplication2.Repository
+namespace IER_P1.Repository
 {
     public interface IStudentRepository
     {
