@@ -9,6 +9,9 @@ namespace IE3_P1.Data
         public string? Name { get; set; }
         public string? Email { get; set; }
         public Gender Gender { get; set; }
+
+        public int CourseId { get; set; }
+        public Course? Course { get; set; }
     }
 
     public enum Gender
