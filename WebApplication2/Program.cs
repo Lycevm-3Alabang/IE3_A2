@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using IER_P1.Data;
-using IER_P1.Repository;
+using IE3_P1.Data;
+using IE3_P1.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 

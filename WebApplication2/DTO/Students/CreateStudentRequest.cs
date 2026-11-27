@@ -1,6 +1,6 @@
-﻿using IER_P1.Data;
+﻿using IE3_P1.Data;
 
-namespace IER_P1.DTO.Students
+namespace IE3_P1.DTO.Students
 {
     public class CreateStudentRequest
     {

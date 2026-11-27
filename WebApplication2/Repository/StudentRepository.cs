@@ -1,7 +1,7 @@
-﻿using WebApplication2.Data;
-using WebApplication2.DTO.Students;
+﻿using IE3_P1.Data;
+using IE3_P1.DTO.Students;
 
-namespace WebApplication2.Repository
+namespace IE3_P1.Repository
 {
     public class StudentRepository : IStudentRepository
     {

@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using IER_P1.Data;
-using IER_P1.DTO.Students;
-using IER_P1.Repository;
+using Microsoft.EntityFrameworkCore;
+using IE3_P1.Data;
+using IE3_P1.DTO.Students;
+using IE3_P1.Repository;
 
 [Route("api/[controller]")]
 [ApiController]

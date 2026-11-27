@@ -1,6 +1,6 @@
-﻿using IER_P1.Data;
+﻿using IE3_P1.DTO.Students;
 
-namespace IER_P1.Repository
+namespace IE3_P1.Repository
 {
     public interface IStudentRepository
     {

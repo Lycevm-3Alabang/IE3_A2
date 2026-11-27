@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace IER_P1.Data
+namespace IE3_P1.Data
 {
     public class Student
     {
