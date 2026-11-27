@@ -48,6 +48,19 @@
         .markdown-body img { max-width: 100%; }
         .markdown-body input[type="checkbox"] { margin-right: 0.4rem; }
 
+        /* Order + additional task notes */
+        .notice { background: white; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+        .notice h3 { color: #2c3e50; font-size: 1.05rem; margin-bottom: 0.6rem; }
+        .notice p { margin: 0.5rem 0 0; line-height: 1.5; }
+        .order-list { list-style: none; margin: 0.5rem 0; padding: 0; counter-reset: step; }
+        .order-list li { position: relative; padding: 0.4rem 0 0.4rem 2rem; }
+        .order-list li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0.4rem; width: 1.4rem; height: 1.4rem; line-height: 1.4rem; text-align: center; background: #1abc9c; color: white; border-radius: 50%; font-size: 0.78rem; font-weight: 700; }
+        .order-list li.last::before { background: #e67e22; }
+        .badge { display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 0.1rem 0.45rem; border-radius: 4px; margin-left: 0.35rem; vertical-align: middle; }
+        .badge.first { background: #1abc9c; color: white; }
+        .badge.last { background: #e67e22; color: white; }
+        .notice a { color: #1abc9c; }
+
         footer { text-align: center; padding: 1rem; color: #999; font-size: 0.85rem; }
         @media (max-width: 700px) { .layout { flex-direction: column; } .file-list { flex: 1 1 auto; width: 100%; } }
     </style>
@@ -63,6 +76,25 @@
     </nav>
     <main>
         <h2>Instruction Files</h2>
+
+        <!-- Feature order: Enrolment must be done last. -->
+        <section class="notice order-note" aria-label="Feature order">
+            <h3>Feature order &mdash; work in this sequence</h3>
+            <ol class="order-list">
+                <li><strong>Student</strong> <span class="badge first">first</span></li>
+                <li><strong>Course</strong></li>
+                <li><strong>Subject</strong></li>
+                <li class="last"><strong>Enrolment</strong> <span class="badge last">last</span></li>
+            </ol>
+            <p><strong>Enrolment should be done last.</strong> It builds on <strong>Student</strong>, <strong>Course</strong>, and <strong>Subject</strong>, so those three must be in place first. Student is the first feature; Enrolment is the last.</p>
+        </section>
+
+        <!-- Additional task. -->
+        <section class="notice task-note" aria-label="Additional task">
+            <h3>Additional task</h3>
+            <p><strong>Redesign the system &mdash; but only as an HTML page.</strong> Produce a redesigned, self-contained HTML page; do not change the backend, the database, or any MVC views. See the redesign: <a href="redesign.html">redesign.html</a>.</p>
+        </section>
+
         <div class="layout">
             <ul id="fileList" class="file-list"></ul>
             <div class="content-panel">

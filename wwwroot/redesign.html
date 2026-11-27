@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redesign - School Management</title>
+    <!--
+        Additional task: redesign the system, but ONLY as an HTML page.
+        Self-contained; no MVC/Razor; no backend or database changes.
+    -->
+    <style>
+        :root {
+            --bg: #0f172a; --panel: #ffffff; --ink: #0f172a; --muted: #64748b;
+            --brand: #0d9488; --brand-ink: #ffffff; --accent: #f59e0b; --line: #e2e8f0;
+            --radius: 14px; --shadow: 0 10px 30px rgba(15, 23, 42, .10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, Tahoma, sans-serif; background: #f1f5f9; color: var(--ink); min-height: 100vh; line-height: 1.55; }
+
+        /* Top bar */
+        .topbar { position: sticky; top: 0; z-index: 10; background: rgba(15,23,42,.96); backdrop-filter: blur(8px); color: #fff; padding: .9rem clamp(1rem,4vw,2.5rem); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .brand { display: flex; align-items: center; gap: .6rem; font-weight: 700; font-size: 1.1rem; }
+        .brand .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--brand), #14b8a6); display: grid; place-items: center; color: #fff; font-weight: 800; }
+        .topnav { margin-left: auto; display: flex; gap: .35rem; flex-wrap: wrap; }
+        .topnav a { color: #cbd5e1; text-decoration: none; padding: .5rem .85rem; border-radius: 9px; font-size: .95rem; transition: background .15s, color .15s; }
+        .topnav a:hover { background: rgba(255,255,255,.08); color: #fff; }
+        .topnav a.active { background: var(--brand); color: var(--brand-ink); }
+
+        /* Hero */
+        .hero { background: radial-gradient(1200px 400px at 10% -10%, #14b8a6 0%, transparent 60%), linear-gradient(135deg, #0f172a, #134e4a); color: #fff; padding: clamp(2rem,6vw,4rem) clamp(1rem,4vw,2.5rem); }
+        .hero-inner { max-width: 1100px; margin: 0 auto; }
+        .hero .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .78rem; color: #5eead4; font-weight: 700; }
+        .hero h1 { font-size: clamp(1.8rem,4vw,2.8rem); margin: .4rem 0 .6rem; line-height: 1.15; }
+        .hero p { color: #cbd5e1; max-width: 60ch; }
+        .hero-actions { margin-top: 1.5rem; display: flex; gap: .75rem; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; gap: .45rem; padding: .7rem 1.15rem; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid transparent; cursor: pointer; font-size: .95rem; }
+        .btn-primary { background: var(--brand); color: var(--brand-ink); }
+        .btn-primary:hover { background: #0f766e; }
+        .btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.3); }
+        .btn-ghost:hover { background: rgba(255,255,255,.08); }
+
+        main { max-width: 1100px; margin: 0 auto; padding: clamp(1.5rem,4vw,3rem) clamp(1rem,4vw,2.5rem); }
+
+        /* Stats */
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1rem; margin-top: -3rem; }
+        .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; }
+        .stat .num { font-size: 1.9rem; font-weight: 800; color: var(--brand); }
+        .stat .label { color: var(--muted); font-size: .9rem; }
+
+        section { margin-top: 2.5rem; }
+        h2.section-title { font-size: 1.3rem; margin-bottom: .35rem; }
+        p.section-sub { color: var(--muted); margin-bottom: 1.25rem; }
+
+        /* Feature cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1.25rem; }
+        .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; display: flex; flex-direction: column; gap: .6rem; transition: transform .15s, box-shadow .15s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(15,23,42,.14); }
+        .card .ico { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; color: #fff; background: var(--brand); }
+        .card h3 { font-size: 1.1rem; }
+        .card p { color: var(--muted); font-size: .92rem; flex: 1; }
+        .card a { color: var(--brand); text-decoration: none; font-weight: 600; }
+        .card a:hover { text-decoration: underline; }
+        .step { display: inline-block; font-size: .72rem; font-weight: 700; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: .1rem .5rem; }
+        .card.last .ico { background: var(--accent); }
+
+        /* Order panel */
+        .order { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; }
+        .order ol { list-style: none; display: grid; gap: .75rem; }
+        .order li { display: flex; align-items: center; gap: .85rem; }
+        .order .n { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; flex: 0 0 30px; }
+        .order li.last .n { background: var(--accent); }
+        .order .note { color: var(--muted); font-size: .9rem; margin-top: 1rem; }
+
+        footer { text-align: center; color: var(--muted); padding: 2rem 1rem; font-size: .88rem; }
+        @media (max-width: 560px) { .topnav { margin-left: 0; width: 100%; } }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand"><span class="logo">SM</span> School Management</div>
+        <nav class="topnav">
+            <a href="instructions.html">Instructions</a>
+            <a href="students.html">Students</a>
+            <a href="subjects.html">Subjects</a>
+            <a href="courses.html">Courses</a>
+            <a href="enrolment.html">Enrolment</a>
+            <a href="redesign.html" class="active">Redesign</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-inner">
+            <p class="eyebrow">Redesign concept &middot; HTML only</p>
+            <h1>School Management, reimagined.</h1>
+            <p>A clean, responsive redesign of the system delivered as a single self-contained HTML page. No MVC, no backend or database changes &mdash; just a fresh visual and navigation design on top of the existing pages and API.</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="#features">Explore features</a>
+                <a class="btn btn-ghost" href="instructions.html">Back to instructions</a>
+            </div>
+        </div>
+    </section>
+
+    <main>
+        <div class="stats" aria-label="Overview">
+            <div class="stat"><div class="num">4</div><div class="label">Core features</div></div>
+            <div class="stat"><div class="num">CRUD</div><div class="label">Students, Courses, Subjects, Enrolment</div></div>
+            <div class="stat"><div class="num">0</div><div class="label">Backend changes in this redesign</div></div>
+            <div class="stat"><div class="num">1</div><div class="label">Self-contained HTML page</div></div>
+        </div>
+
+        <section id="features">
+            <h2 class="section-title">Features</h2>
+            <p class="section-sub">The same capabilities, presented more clearly. Enrolment is worked on last.</p>
+            <div class="grid">
+                <article class="card">
+                    <span class="step">Step 1 &middot; first</span>
+                    <div class="ico">St</div>
+                    <h3>Students</h3>
+                    <p>Manage student records: name, email, gender, and course. Full create / read / update / delete.</p>
+                    <a href="students.html">Open Students &rarr;</a>
+                </article>
+                <article class="card">
+                    <span class="step">Step 2</span>
+                    <div class="ico">Co</div>
+                    <h3>Courses</h3>
+                    <p>Manage courses that students are assigned to. Built before enrolment.</p>
+                    <a href="courses.html">Open Courses &rarr;</a>
+                </article>
+                <article class="card">
+                    <span class="step">Step 3</span>
+                    <div class="ico">Su</div>
+                    <h3>Subjects</h3>
+                    <p>Manage subjects offered by the school. Built before enrolment.</p>
+                    <a href="subjects.html">Open Subjects &rarr;</a>
+                </article>
+                <article class="card last">
+                    <span class="step">Step 4 &middot; last</span>
+                    <div class="ico">En</div>
+                    <h3>Enrolment</h3>
+                    <p>Link students to courses and subjects. <strong>Do this last</strong> &mdash; it builds on Student, Course, and Subject.</p>
+                    <a href="enrolment.html">Open Enrolment &rarr;</a>
+                </article>
+            </div>
+        </section>
+
+        <section id="order">
+            <h2 class="section-title">Recommended order</h2>
+            <p class="section-sub">Build the features in this sequence.</p>
+            <div class="order">
+                <ol>
+                    <li><span class="n">1</span> <strong>Student</strong> &mdash; first feature</li>
+                    <li><span class="n">2</span> <strong>Course</strong></li>
+                    <li><span class="n">3</span> <strong>Subject</strong></li>
+                    <li class="last"><span class="n">4</span> <strong>Enrolment</strong> &mdash; last feature</li>
+                </ol>
+                <p class="note"><strong>Enrolment should be done last:</strong> it depends on Student, Course, and Subject being in place.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>School Management System &copy; 2026 &middot; Redesign concept &mdash; HTML page only</footer>
+</body>
+</html>
