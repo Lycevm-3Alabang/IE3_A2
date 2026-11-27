@@ -573,52 +573,14 @@ app.UseStaticFiles();
 
 ---
 
-## Hand‑Off Section – Historical Context
-
-### What was already in the repository?
-
-| Item | Location | Status |
-|------|----------|--------|
-| `Student` entity | `Data/Student.cs` | Present |
-| `Students` DbSet | `Data/SqliteDbContext.cs` | Present |
-| `courses.html` | `wwwroot/courses.html` | Present (UI layout) |
-| No `Course` entity existed. | — | Absent |
-| No DTOs for Courses. | — | Absent |
-
-### What will be added by this exercise?
-
-* `Course` entity class with validation attributes.  
-* Five DTOs: *CreateCourseRequest*, *CreateCourseResponse*, *UpdateCourseRequest*, *UpdateCourseResponse*, *CourseResponse*.  
-* Repository interface (`ICoursesRepository`) and implementation (`CoursesRepository`).  
-* `CoursesController` API controller.  
-* `DbSet<Course>` in `SqliteDbContext.cs`.  
-* DI registration for the repository.
-
----
-
-## Handoff Summary
-
-This document now contains all the pieces needed to complete the Course feature with a repository‑pattern architecture.  
-Each user story is independent and can be completed in order without overlap:
-
-| User Story | File(s) Modified / Created |
-|------------|---------------------------|
-| **1 – Course Entity** | `Data/Course.cs` |
-| **2 – DTOs** | `DTO/Courses/CreateCourseRequest.cs`, `CreateCourseResponse.cs`, `UpdateCourseRequest.cs`, `UpdateCourseResponse.cs`, `CourseResponse.cs` |
-| **3 – Repository** | `Repositories/ICoursesRepository.cs`, `Repositories/CoursesRepository.cs` |
-| **4 – Controller** | `Controllers/CoursesController.cs` |
-| **5 – DI Registration** | `Program.cs` |
-| **6 – DbContext & Migrations** | `Data/SqliteDbContext.cs` (add DbSet), then run migration commands |
-| **7 – Front-End Testing** | `wwwroot/courses.html` (read-only), `Program.cs` (JSON options, static files) |
-
-### Potential Pitfalls
+## Potential Pitfalls
 
 * Forgetting to register the repository in DI results in a runtime error when the controller tries to inject it.  
 * Missing the `Course` DbSet will cause EF migration failures.  
 * DTO and entity mismatches can lead to runtime mapping errors.  
 * Not using `[FromBody]` on POST/PUT may cause model binding to fail silently.
 
-### Checklist
+## Checklist
 
 * [ ] Course entity fields implemented with validation attributes.  
 * [ ] All five DTOs created with correct naming convention.  
